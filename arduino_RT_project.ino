@@ -32,11 +32,21 @@ void loop() {
 
     canWakeUpInterface();
     canWakeUp();
+
     
     if(calibration){
     calibration_function();
     calibration_interface();
     }
+
+    /*
+    //testing hub
+    if (calibration){
+      hubServer();
+      hubServerResponse();
+      hubClient();
+    }
+    */
 
   }
 
@@ -88,8 +98,27 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
         case 7:
         case 8:
           if (!(caliBuffer.write(instr)))
-            Serial.println("cwuBuffer overflow");
+            Serial.println("caliBuffer overflow");
           break;
+        case 9:
+        case 10:
+        case 11:
+        if (!(consensusBuffer.write(instr)))
+            Serial.println("consensusBuffer overflow");
+          break;
+        case 12:
+        case 13:
+        case 14:
+          if (!(miniHubBuffer.write(instr)))
+            Serial.println("miniHubBuffer overflow");
+          break;
+        case 15:
+        case 16:
+          if (!(hubBuffer.write(instr)))
+            Serial.println("hubBuffer overflow");
+          break;
+
+          
 
       }
     } else {

@@ -27,6 +27,9 @@ Node node;
 const double R1=10.0;//  kOhm
 //FSM DataBuffers
 CanFsmBuffer caliBuffer;
+CanFsmBuffer consensusBuffer;
+CanFsmBuffer miniHubBuffer;
+
 
 ///CALIBRATION VARIABLES///
 const int turnOnLightTime=300;
@@ -40,7 +43,13 @@ float g=0;
 float p=20;
 int nb_turn;
 //########## Shaida ##########
-
+String CR; //Client Request
+String SR; //Server Response
+CanFsmBuffer hubBuffer;
+bool hubServerFlag = false;
+bool newMessage= false;
+float float_val = 0.0;
+bool bool_val = 0;
 
 //########## Eric ##########
 //FSM Data Buffers

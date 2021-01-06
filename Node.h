@@ -8,7 +8,7 @@ class Node{
   float L;
   float c;
   float o;
-  float myHwId;
+  uint8_t myHwId;
   float k[3]={};
   float b;
   float m;
@@ -29,8 +29,8 @@ inline void Node::setValues(){
 }
 
 inline float Node::tau(float lux_asked){
-  if(myHwId=1) return tau1;
-  else if(myHwId=2) return tau1*log10(lux_asked)+tau2;
+  if(myHwId==1) return tau1;
+  else if(myHwId==2) return tau1*log10(lux_asked)+tau2;
   else if(myHwId==3) return tau1*log(lux_asked)+tau2;
 }
 

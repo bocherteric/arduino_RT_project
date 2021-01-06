@@ -2,6 +2,7 @@
 # define GLOBAL_VAR_H
 
 #include "CanFsmBuffer.h"
+#include "CanFloatBuffer.h"
 #include "Node.h"
 
 
@@ -46,6 +47,7 @@ int nb_turn;
 String CR; //Client Request
 String SR; //Server Response
 CanFsmBuffer hubBuffer;
+CanFloatBuffer floatHubBuffer;
 bool hubServerFlag = false;
 bool newMessage= false;
 float float_val = 0.0;

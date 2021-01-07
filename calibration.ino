@@ -9,6 +9,8 @@ void calibration_function(){
       case DISTURBANCE:
         analogWrite(analogOutPin,0);
         node.o=read_lux();
+        Serial.print("O value: ");
+        Serial.println(node.o);
         canWrite(node.myHwId,4);//tell everybody I'm ready with my disturbance
         cs_calib=READY;
       break;
@@ -24,8 +26,8 @@ void calibration_function(){
         if(node.myHwId==index){//is it my turn?
           nb_turn+=1;//To track the number of turns of calibration 
           if (nb_turn>1){// meaning, if it's the second time I do it ==> loop completed, the all calibration is done
-            Serial.println("Calibration ends");
             calibration=0;
+            ready_for_consensus=1;
             canWrite(node.myHwId,5);//Tell everybody the all calibration is done
             break;
           }
@@ -43,7 +45,7 @@ void calibration_function(){
           analogWrite(analogOutPin, p*2.55);//change the value of the lux
           prevTime=millis();
         }   
-        if(millis()-prevTime>turnOnLightTime){//wait until the light is on (~300ms)
+        if(millis()-prevTime>turnOnLightTime){//wait until the light is on (~300ms)  
           g+=(read_lux()-node.o)/p;//compute gain
           canWrite(node.myHwId,6);//Tell the others to compute their gain
           cs_calib=READY2;
@@ -60,7 +62,11 @@ void calibration_function(){
       case OVER:
         if(p>=100){
           canWrite(node.myHwId,7);//Send to everybody it's over!
-          node.k[index]=g/5;//compute final gain
+          node.k[index-1]=g/5;//compute final gain
+        Serial.println("Values of the cross gain");
+        for(uint8_t counter=0; counter<nodesCont.numberOfNodes()+1; counter++){
+          Serial.println(node.k[counter]);
+        }
           g=0;//clear gain for next calibration
           p=20;
           cs_calib=RESET;
@@ -82,15 +88,19 @@ void calibration_function(){
       case NOT_MY_TURN: //Loop waiting between compute_gain, over, and my turn
       if(compute_gain){
         compute_gain=0;
-        g+=(read_lux()-node.o)/p;//compute gain
+        g+=(read_lux()-node.o)/p;//compute gain 
         p+=20;//increase the value of lux
         canWrite(node.myHwId,4,index);//Send I'm ready to the index
       }
       if(over){
         over=0;
-        node.k[index]=g/5; //store total gain at the row corresponding to the index
+        node.k[index-1]=g/5; //store total gain at the row corresponding to the index
         g=0;//clear gain
         p=20;
+        Serial.println("Values of the cross gain");
+        for(uint8_t counter=0; counter<nodesCont.numberOfNodes()+1; counter++){
+          Serial.println(node.k[counter]);
+        }
       }
       if(node.myHwId == index)
         cs_calib=TURN;
@@ -110,9 +120,9 @@ void calibration_interface(){
       case 4:
         Ready+=1;
       break;
-
       case 5:
         calibration=0;
+        ready_for_consensus=1;
       break;
 
       case 6:

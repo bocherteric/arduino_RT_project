@@ -41,12 +41,27 @@ void loop() {
     canWakeUpInterface();
     canWakeUp();
 
-    /*
+    
       if (calibration) {
       calibration_function();
       calibration_interface();
       }
-*/
+
+
+  if(ready_for_consensus){
+      distributed_solver();
+      consensus_interface();
+      if(solution_ready){
+        ready_for_consensus=0;
+        solution_ready=0;
+        Serial.println("Here is the final solution of the consensus function");
+        for(uint8_t counter=0; counter<=2; counter++){
+          Serial.println(d[counter]);
+        }
+        Serial.print("The cost is: ");
+          Serial.println(final_cost);
+      }
+    }
 
     //testing hub
     if (calibration) {
@@ -94,7 +109,9 @@ MCP2515::ERROR write(uint32_t id, uint32_t val, uint16_t floatData) {
       Serial.println(msg.bytes[i]);
     }
     frame.data[4] = splitInt(floatData, LSB);
+    Serial.println(frame.data[4]);
     frame.data[5] = splitInt(floatData, MSB);
+    Serial.println(frame.data[5]);
   }
   return mcp2515.sendMessage(&frame);
 }
@@ -112,7 +129,6 @@ uint8_t splitInt(uint16_t floatData, uint8_t byt) {
 
 
 void canRead() { //!!!!Check excecution time -> Read out one message at a time?!!!!
-  Serial.println("canRead");
   interrupt = false;
   if ( mcp2515_overflow ) {
     Serial.println( "\tMCP2516 RX Buf Overflow" );
@@ -131,13 +147,16 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
 
 
     if (frame.data[3] == node.myHwId || frame.data[3] == 0) { //check am I the addresee?
+      Serial.println("canRead");
       if (frame.can_dlc == 4) {
         for (int i = 0; i < 3; i++) { // Is there a better way, faster, and no copying values?
           instr.data[i] = frame.data[i];
+          Serial.println(instr.data[i]);
         }
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
+          Serial.println(instrF.data[i]);
         }
       } else {
         Serial.println("Error in Can read()");
@@ -162,14 +181,9 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
         case 9:
         case 10:
         case 11:
-          if (!(consensusBuffer.write(instr)))
-            Serial.println("consensusBuffer overflow");
-          break;
         case 12:
-        case 13:
-        case 14:
-          if (!(miniHubBuffer.write(instr)))
-            Serial.println("miniHubBuffer overflow");
+          if (!(consensusBuffer.write(instr)))
+            Serial.println("floatconsensusBuffer overflow");
           break;
         case 15:
           if (!(hubBuffer.write(instr)))
@@ -215,20 +229,20 @@ void irqHandler() {
   interrupt = true;
 }
 
-double mean_analogread() { //does the average of the value mesured to avoid noise
-
-  double sample1 = analogRead(analogInPin);
-  double sample2 = analogRead(analogInPin);
-  double sample3 = analogRead(analogInPin);
-  double sample4 = analogRead(analogInPin);
-  return (sample1 + sample2 + sample3 + sample4) / 4;
+double mean_analogread(){ //does the average of the value mesured to avoid noise
+  
+  double sample1=analogRead(analogInPin);
+  double sample2=analogRead(analogInPin);
+  double sample3=analogRead(analogInPin);
+  double sample4=analogRead(analogInPin);
+  return (sample1+sample2+sample3+sample4)/4;
 }
 
-double read_lux() {
-  double R2 = R1 * 1023 / mean_analogread() - R1; //compute R2 in Kohm
-  return pow(10, (log10(R2) - node.b) / node.m);
+double read_lux(){
+    double R2= R1*1023/mean_analogread()-R1; //compute R2 in Kohm  
+    return pow(10,(log10(R2)-node.b)/node.m);
 }
 
-double read_voltage() {
-  return mean_analogread() * 5.0 / 1023.0;
+double read_voltage(){
+  return mean_analogread()*5.0/1023.0;
 }

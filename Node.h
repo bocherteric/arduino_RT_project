@@ -5,15 +5,15 @@
 
 class Node{
   public:
-  float L[3]={15,30,0};
+  float L[3]={10,30,0};
   float low_bound=15;
   float maxLux=0;
   float c=1;
-  float o=50;
+  float o=0;
   uint8_t myHwId;
   float k[3]={};
   float b;
-  float m;
+  double m;
   double tau1;
   double tau2;
   
@@ -24,9 +24,7 @@ class Node{
 inline void Node::setValues(){
   myHwId=EEPROM.read(16);
   b=(1-2*EEPROM.read(0))*(EEPROM.read(1)+EEPROM.read(2)/pow(10,EEPROM.read(3)));
-  Serial.print("M VALUE: ");
-  m=(1-2*EEPROM.read(4))*(EEPROM.read(5)+EEPROM.read(6)/pow(10,EEPROM.read(7))); 
-  Serial.println(m);
+  m=(1-2*EEPROM.read(4))*(EEPROM.read(5)+EEPROM.read(6)/pow(10,EEPROM.read(7)));
   tau1=(1-2*EEPROM.read(8))*(EEPROM.read(9)+EEPROM.read(10)/pow(10,EEPROM.read(11)));
   tau2=(1-2*EEPROM.read(12))*(EEPROM.read(13)+EEPROM.read(14)/pow(10,EEPROM.read(15)));
   

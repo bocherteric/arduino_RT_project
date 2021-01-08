@@ -20,7 +20,7 @@ void hubServer() {
     switch (CR[0]) {
 
       case 'g':
-        Serial.println(" g enterd");
+        Serial.println(" g entered");
         switch (CR[1]) {
 
           case 'I':

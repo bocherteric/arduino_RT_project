@@ -55,6 +55,7 @@ void canWakeUp() {
       Serial.println("Wake-Up is finished1");
       canWrite(0, 3, 0, node.myHwId);
       calibration=true;
+      wakeUp=0;
       cwuSwitch++;
       break;
     case 6: //DEBUG
@@ -100,6 +101,7 @@ void canWakeUpInterface() {
         break;
       case 3: //WAKE-UP FINISHED
         calibration=true;
+        wakeUp=0;
         index = tempInst.data[0];
         Serial.println("Wake-Up is finished2");
         cwuSwitch = 6;

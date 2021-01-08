@@ -4,7 +4,8 @@
 #include "CanFsmBuffer.h"
 #include "CanFloatBuffer.h"
 #include "Node.h"
-
+#include "pi.h"
+#include "Simulator.h"
 
 
 //########## Shared ##########
@@ -20,16 +21,20 @@ uint8_t cwuSwitch = 0; //Switch Variable for canWakeUp
 uint8_t index=0;
 //Nodes management
 NodesContainer nodesCont;
-Node node;
+//Node node;
 //Luminaire
 uint8_t outputDC=0;
 bool occupancy=0;
 
 
 //########## Juliette ##########
-//First part of project
-const double R1=10.0;//  kOhm
+///LUMINAIRE VARIABLES//
+Simulator prevision;
+pi controler;
+float vi=0;
+float ti=0;
 float percent=0;
+
 //FSM DataBuffers
 CanFsmBuffer caliBuffer;
 CanFsmBuffer consensusBuffer;
@@ -43,20 +48,20 @@ bool calibration=false;
 bool compute_gain=0;
 bool over=0;
 bool change_lux=1; 
-int Ready=0;
+uint8_t Ready=0;
 float g=0;
 float p=20;
-int nb_turn;
+uint8_t nb_turn;
 
 ///CONSENSUS VARIABLES///
 float d[3]={};//solutions in percentage
 float d_all[3][3]={};
 float d_av[3] ={};
 float y[3] = {};
-int c[3]={};//cost function paramters ≠ final cost!!
+uint8_t c[3]={};//cost function paramters ≠ final cost!!
 float rho=0.07;
-int a=0;// Number of current iterations
-int maxiter=25;//Number of iterations in consensus
+uint8_t a=0;// Number of current iterations
+uint8_t maxiter=25;//Number of iterations in consensus
 bool solution_ready=0;
 bool partial_solution_ready=0;
 float final_cost=0;
@@ -67,6 +72,7 @@ float cost = 1;
 float z[3]={};
 float w=0;
 bool ready_for_consensus=0;
+
 
 //########## Shaida ##########
 String CR; //Client Request
@@ -102,6 +108,6 @@ bool restartWakeUp = false;
 bool checkedNodes = false;
 bool checkIfFirstNode = false;
 bool checkedNodesCounter = false;
-
+bool wakeUp=1;
 
 #endif

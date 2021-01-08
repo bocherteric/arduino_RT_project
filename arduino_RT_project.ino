@@ -7,7 +7,7 @@
 #include "NodesContainer.h"
 #include "globalVariables.h"
 #include "Node.h"
-
+#include "Simulator.h"
 #define MSB 1
 #define LSB 0
 
@@ -33,28 +33,31 @@ void loop() {
   while (millis() - timeVar >= periodVar) {
     timeVar = millis();
 
-
     if ( interrupt ) {
       canRead();
     }
-
+    if(wakeUp){
     canWakeUpInterface();
     canWakeUp();
-
+    }
     
       if (calibration) {
       calibration_function();
       calibration_interface();
       }
 //check the occupancy and share with the others
-
-
+if (!calibration && !wakeUp){
   if(ready_for_consensus){
       distributed_solver();
       consensus_interface();
       if(solution_ready){
         ready_for_consensus=0;
         solution_ready=0;
+        percent=d[node.myHwId-1];
+        ti=timeVar; //initial time before the step
+        vi=read_voltage(); //initial voltage before the step
+        prevision.simulatorStart(percent*node.maxLux/100);
+        
         Serial.println("Here is the final solution of the consensus function");
         for(uint8_t counter=0; counter<=2; counter++){
           Serial.println(d[counter]);
@@ -63,6 +66,8 @@ void loop() {
           Serial.println(final_cost);
       }
     }
+    luminaire();
+}  
 
     //testing hub
     if (calibration) {
@@ -91,7 +96,7 @@ void canWrite(uint32_t id, uint8_t purpose, uint8_t recipient = 0, uint8_t data 
 }
 
 MCP2515::ERROR write(uint32_t id, uint32_t val, uint16_t floatData) {
-  Serial.println("am I writing?");
+  Serial.println("I am writing");
   can_frame frame;
   frame.can_id = id;
   my_can_msg msg;
@@ -152,12 +157,12 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
       if (frame.can_dlc == 4) {
         for (int i = 0; i < 3; i++) { // Is there a better way, faster, and no copying values?
           instr.data[i] = frame.data[i];
-          Serial.println(instr.data[i]);
+          //Serial.println(instr.data[i]);
         }
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
-          Serial.println(instrF.data[i]);
+         // Serial.println(instrF.data[i]);
         }
       } else {
         Serial.println("Error in Can read()");
@@ -240,7 +245,7 @@ double mean_analogread(){ //does the average of the value mesured to avoid noise
 }
 
 double read_lux(){
-    double R2= R1*1023/mean_analogread()-R1; //compute R2 in Kohm  
+    double R2= 10*1023/mean_analogread()-10; //compute R2 in Kohm  
     return pow(10,(log10(R2)-node.b)/node.m);
 }
 

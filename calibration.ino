@@ -61,13 +61,15 @@ void calibration_function(){
 
       case OVER:
         if(p>=100){
+          node.maxLux=read_lux();
+          Serial.print("MAX LUX ");
+          Serial.println(node.maxLux);
           canWrite(node.myHwId,7);//Send to everybody it's over!
           node.k[index-1]=g/5;//compute final gain
         Serial.println("Values of the cross gain");
         for(uint8_t counter=0; counter<nodesCont.numberOfNodes()+1; counter++){
           Serial.println(node.k[counter]);
         }
-        node.maxLux=read_lux();
           g=0;//clear gain for next calibration
           p=20;
           cs_calib=RESET;
@@ -97,7 +99,6 @@ void calibration_function(){
         over=0;
         node.k[index-1]=g/5; //store total gain at the row corresponding to the index
         g=0;//clear gain
-        node.maxLux=read_lux();
         p=20;
         Serial.println("Values of the cross gain");
         for(uint8_t counter=0; counter<nodesCont.numberOfNodes()+1; counter++){

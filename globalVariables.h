@@ -21,6 +21,9 @@ uint8_t index=0;
 //Nodes management
 NodesContainer nodesCont;
 Node node;
+//Luminaire
+uint8_t outputDC=0;
+bool occupancy=0;
 
 
 //########## Juliette ##########

@@ -46,6 +46,7 @@ void loop() {
       calibration_function();
       calibration_interface();
       }
+//check the occupancy and share with the others
 
 
   if(ready_for_consensus){

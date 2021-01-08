@@ -6,6 +6,8 @@
 class Node{
   public:
   float L[3]={15,30,0};
+  float low_bound=15;
+  float maxLux=0;
   float c=1;
   float o=50;
   uint8_t myHwId;

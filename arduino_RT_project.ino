@@ -1,4 +1,4 @@
-s#include <can.h>
+#include <can.h>
 #include <mcp2515.h>
 #include <SPI.h>
 
@@ -166,11 +166,7 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
-          <<< <<< < HEAD
           // Serial.println(instrF.data[i]);
-          == == == =
-            //Serial.println(instrF.data[i]);
-            >>>>>>> a7e67a4d916373af9de4da4447fddb42c9ba3a3d
         }
       } else {
         Serial.println("Error in Can read()");
@@ -290,16 +286,10 @@ double mean_analogread() { //does the average of the value mesured to avoid nois
   return (sample1 + sample2 + sample3 + sample4) / 4;
 }
 
-<<< <<< < HEAD
 double read_lux() {
   double R2 = 10 * 1023 / mean_analogread() - 10; //compute R2 in Kohm
   return pow(10, (log10(R2) - node.b) / node.m);
-  == == == =
-  double read_lux() {
-    double R2 = 10 * 1023 / mean_analogread() - 10; //compute R2 in Kohm
-    return pow(10, (log10(R2) - node.b) / node.m);
-    >>> >>> > a7e67a4d916373af9de4da4447fddb42c9ba3a3d
-  }
+}
 
   double read_voltage() {
     return mean_analogread() * 5.0 / 1023.0;

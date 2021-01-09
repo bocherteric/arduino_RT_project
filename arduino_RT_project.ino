@@ -46,8 +46,9 @@ void loop() {
       calibration_interface();
       }
 //check the occupancy and share with the others
-if (!calibration && !wakeUp){
-  if(ready_for_consensus){
+if(!calibration){
+  if  @ 
+  (ready_for_consensus){
       distributed_solver();
       consensus_interface();
       if(solution_ready){
@@ -66,8 +67,8 @@ if (!calibration && !wakeUp){
           Serial.println(final_cost);
       }
     }
-    luminaire();
-}  
+          luminaire();
+}
 
     //testing hub
     if (calibration) {
@@ -106,13 +107,13 @@ MCP2515::ERROR write(uint32_t id, uint32_t val, uint16_t floatData) {
     frame.can_dlc = 4;
     for ( int8_t i = 0; i < 4; i++ ) {
       frame.data[i] = msg.bytes[i];
-      Serial.println(msg.bytes[i]);
+      //Serial.println(msg.bytes[i]);
     }
   } else {
     frame.can_dlc = 6;
     for ( int i = 0; i < 4; i++ ) { //prepare can message
       frame.data[i] = msg.bytes[i];
-      Serial.println(msg.bytes[i]);
+      //Serial.println(msg.bytes[i]);
     }
     frame.data[4] = splitInt(floatData, LSB);
     Serial.println(frame.data[4]);
@@ -162,7 +163,7 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
-         // Serial.println(instrF.data[i]);
+          //Serial.println(instrF.data[i]);
         }
       } else {
         Serial.println("Error in Can read()");
@@ -245,7 +246,7 @@ double mean_analogread(){ //does the average of the value mesured to avoid noise
 }
 
 double read_lux(){
-    double R2= 10*1023/mean_analogread()-10; //compute R2 in Kohm  
+    double R2= 10*1023/mean_analogread()-10; //compute R2 in Kohm 
     return pow(10,(log10(R2)-node.b)/node.m);
 }
 

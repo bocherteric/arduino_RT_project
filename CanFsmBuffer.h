@@ -10,7 +10,7 @@ struct instruction{
 
 class CanFsmBuffer {
 
-    static const int bufferSize = 3;
+    static const int bufferSize = 4;
     instruction fsmBuffer[bufferSize];
 
     int readIndex = 0;

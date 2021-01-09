@@ -100,7 +100,7 @@ void canWrite(uint32_t id, uint8_t purpose, uint8_t recipient = 0, uint8_t data 
 }
 
 MCP2515::ERROR write(uint32_t id, uint32_t val, uint16_t floatData) {
-  Serial.println("I am writing");
+  Serial.println("canWrite");
   can_frame frame;
   frame.can_id = id;
   my_can_msg msg;
@@ -110,13 +110,13 @@ MCP2515::ERROR write(uint32_t id, uint32_t val, uint16_t floatData) {
     frame.can_dlc = 4;
     for ( int8_t i = 0; i < 4; i++ ) {
       frame.data[i] = msg.bytes[i];
-      //Serial.println(msg.bytes[i]);
+      Serial.println(msg.bytes[i]);
     }
   } else {
     frame.can_dlc = 6;
     for ( int i = 0; i < 4; i++ ) { //prepare can message
       frame.data[i] = msg.bytes[i];
-      //Serial.println(msg.bytes[i]);
+      Serial.println(msg.bytes[i]);
     }
     frame.data[4] = splitInt(floatData, LSB);
     Serial.println(frame.data[4]);
@@ -161,12 +161,12 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
       if (frame.can_dlc == 4) {
         for (int i = 0; i < 3; i++) { // Is there a better way, faster, and no copying values?
           instr.data[i] = frame.data[i];
-          //Serial.println(instr.data[i]);
+          Serial.println(instr.data[i]);
         }
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
-          // Serial.println(instrF.data[i]);
+          Serial.println(instrF.data[i]);
         }
       } else {
         Serial.println("Error in Can read()");
@@ -238,10 +238,10 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
           if (!(hubBuffer.write(instr)))
             Serial.println("hubBuffer overflow");
           break;
-
-
-
-
+        case 99:
+          if (!(floatHubBuffer.write(instrF)))
+            Serial.println("floatHubBuffer overflow");
+          break;
 
       }
     } else {

@@ -1,4 +1,4 @@
-
+#define RPI 0
 
 
 void hubServer() {
@@ -8,7 +8,9 @@ void hubServer() {
     hubServerFlag = true;
     newMessage = true;
     CR = Serial.readStringUntil('\n');
-
+    if(!RPI){
+      Serial.println(CR);
+    }
     /*
       Serial.print("The Arduino number ");
       Serial.print(node.myHwId);
@@ -90,7 +92,7 @@ void hubServer() {
             if(hwId == node.myHwId || nodesCont.nodeAvailable(hwId)){
               Serial.print(CR[1]);
               Serial.print(CR[2]);
-              Serial.println(node.L[hwId]);
+              Serial.println(node.L[hwId-1]);
             } else {
               Serial.println("Requested Node is NOT available");
             }
@@ -118,7 +120,7 @@ void hubServer() {
             Serial.println("ack");
           }
         } else if (nodesCont.nodeAvailable(hwId)) {
-          canWrite(0, 21, hwId);
+          canWrite(0, 21, hwId,temp);
         } else {
           Serial.println("Requested Node is NOT available");
         }
@@ -235,7 +237,7 @@ void hubServerResponse() {
           Serial.println(tempF);
         break;
         case 99:
-        node.L[tempInstF.data[2]]=tempF;
+        node.L[tempInstF.data[2]-1]=tempF;
         ready_for_consensus = true;
           
       }
@@ -308,7 +310,7 @@ void hubClient() {
          canWrite(0, 28, tempInstF.data[2], temp);
           break;
         case 99:
-        node.L[tempInstF.data[2]]=tempF;
+        node.L[tempInstF.data[2]-1]=tempF;
         ready_for_consensus = true;
       }
 
@@ -327,35 +329,39 @@ void consensusStart(){
       if(ready_for_consensus)//Consensus running at the moment
         break;
       if(occupancy){
-        node.L[node.myHwId]=luxOccupied;
+        node.L[node.myHwId-1]=luxOccupied;
       }else{
-        node.L[node.myHwId]=luxUnoccupied;
+        node.L[node.myHwId-1]=luxUnoccupied;
       }
       ready_for_consensus = true;
-      exponent = getExponent(node.L[node.myHwId]);
-      canWrite(0, 99, 0, exponent, floatToCan(node.L[node.myHwId], exponent));
+      exponent = getExponent(node.L[node.myHwId-1]);
+      canWrite(0, 99, 0, exponent, floatToCan(node.L[node.myHwId-1], exponent));
       conStartSwitch=0;
       break;
     case 2: // ILLUMINANCE OCCUPIED STATE CHANGED
-      if(!occupancy)
-        conStartSwitch=0;break;
+      if(!occupancy){
+        conStartSwitch=0;
+        break;
+      }
       if(ready_for_consensus)//Consensus running at the moment
         break;
       ready_for_consensus = true;
-      node.L[node.myHwId]=luxOccupied;
-      exponent = getExponent(node.L[node.myHwId]);
-      canWrite(0, 99, 0, exponent, floatToCan(node.L[node.myHwId], exponent));
+      node.L[node.myHwId-1]=luxOccupied;
+      exponent = getExponent(node.L[node.myHwId-1]);
+      canWrite(0, 99, 0, exponent, floatToCan(node.L[node.myHwId-1], exponent));
       conStartSwitch=0;
       break;
     case 3: // ILLUMINANCE UNOCCUPIED STATE CHANGED
-      if(occupancy)
-        conStartSwitch=0;break;
+      if(occupancy){
+        conStartSwitch=0;
+        break;
+      }
       if(ready_for_consensus)//Consensus running at the moment
         break;
       ready_for_consensus = true;
-      node.L[node.myHwId]=luxUnoccupied;
-      exponent = getExponent(node.L[node.myHwId]);
-      canWrite(0, 99, 0, exponent, floatToCan(node.L[node.myHwId], exponent));
+      node.L[node.myHwId-1]=luxUnoccupied;
+      exponent = getExponent(node.L[node.myHwId-1]);
+      canWrite(0, 99, 0, exponent, floatToCan(node.L[node.myHwId-1], exponent));
       conStartSwitch=0;
       break;
     default:

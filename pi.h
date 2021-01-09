@@ -25,7 +25,7 @@ T(T), kp (p), ki (i), ep (0), k1 (ki*T/2), e(0), p(0)
 {}
 
 float pi::calc( float ref, float y ) {
-  e = ref - y;
+  e = dead_zone(ref - y);
   p = kp*e;
   i = ip + k1 * ( e + ep ); 
   yp = y; ip = i;  ep = e;

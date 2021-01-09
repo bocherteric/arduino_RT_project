@@ -5,7 +5,7 @@
 
 class Node{
   public:
-  float L[3]={10,30,0};
+  float L[3]={0,30,0};
   float low_bound=15;
   float maxLux=0;
   float c=1;

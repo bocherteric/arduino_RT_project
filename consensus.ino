@@ -27,7 +27,7 @@ void distributed_solver(){
    consensus_iterate(rho);//takes 8 loops max -> changes d
    }else if(partial_solution_ready==1){
     partial_solution_ready=0;
-    for(uint8_t counter=0;counter<=nodesCont.numberOfNodes();counter++){
+    for(uint8_t counter=0;counter<3;counter++){
       d_all[counter][node.myHwId-1]=d[counter];
     }
      cs_solver=EXCHANGE;
@@ -37,20 +37,23 @@ void distributed_solver(){
    ////
    // Nodes exchange their solutions
    case EXCHANGE:
-    for(uint8_t counter=0;counter<=nodesCont.numberOfNodes();counter++){
+    for(uint8_t counter=0;counter<3;counter++){
       if(d[counter]<=0)
-      canWrite(0,9+counter,0,0);//send solutions to everyone
+      canWrite(0,9+counter,0,0);//send 0 to everyone if negative
       else
       canWrite(0,9+counter,0,d[counter]);//send solutions to everyone
 
     }
-    canWrite(node.myHwId,12);//tell everyone I'm ready to proceed
+
+    canWrite(0,12);//tell everyone I'm ready to proceed
     cs_solver= READY_EX;
    break;
 
    //WAIT UNTIL EVERYBODY IS READY
     case READY_EX:
     if(Ready==nodesCont.numberOfNodes()){
+      Serial.print("Ready= ");
+      Serial.println(Ready);
       Ready=0;
       cs_solver=AVERAGE;
     }
@@ -59,11 +62,15 @@ void distributed_solver(){
    ////
    //COMPUTATION OF THE AVERAGE
    case AVERAGE:
-   Serial.println("SOLUTION OF THE OTHER ARDUINO");
-   for( uint8_t counter=0; counter<3; counter++){//iterate on the colums
-        Serial.println(d_all[counter][nodesCont.getNextNode()-1]);
+   //Serial.println("SOLUTION OF ALL OF THE ARDUINOS");
+     for( uint8_t counter=0; counter<3; counter++){//iterate on the columns
+      //Serial.print("Arduino ");
+      //Serial.println(counter);
+      for( uint8_t counter2=0; counter2<3; counter2++){//iterate on the rows      
+        //Serial.println(d_all[counter2][counter]);
         d_av[counter]=0;
-   }
+      }
+     }
    
    Serial.println("Average solution:");
     for( uint8_t counter2=0; counter2<3; counter2++){//iterate on the rows
@@ -105,6 +112,10 @@ void distributed_solver(){
 float evaluate_cost(float d[3],float rho){
      float result;
      for(uint8_t counter=0; counter<3; counter++){
+      Serial.println("counter, y[counter]");
+      Serial.print(counter);
+      Serial.print('\t');
+      Serial.println(y[counter]);
      result+= c[counter]*d[counter] +y[counter]*(d[counter]-d_av[counter]);
      }
      return result + rho/2*pow(norm(d,d_av),2);
@@ -124,7 +135,7 @@ bool check_feasibility(float d[3]){
     return 0;
    }
    float vector_product=0;
-   for(uint8_t counter=0; counter<nodesCont.numberOfNodes()+1; counter++){
+   for(uint8_t counter=0; counter<3; counter++){
     vector_product+=d[counter]*node.k[counter];
    }
   if (vector_product< node.L[node.myHwId-1]-node.o-tol) {
@@ -147,9 +158,6 @@ void consensus_iterate(float rho) {
     case SET:
       
       c[node.myHwId-1]=node.c;
-      /*d_best[0] = -1;
-      d_best[1]=-1;
-      d_best[2]=-1;*/
       cost_best = 1000000; //large number
       sol = 0;
       cost = 1;
@@ -171,12 +179,15 @@ void consensus_iterate(float rho) {
           //Serial.println(d_u[counter]);
         }
         sol = check_feasibility(d_u);
-       /* Serial.print("FEASIBILITY: ");
-        Serial.println(sol);*/
+        ////Serial.print("FEASIBILITY: ");
+        ////Serial.println(sol);
         if(sol){
             //REVISE: IF UNCONSTRAINED SOLUTION EXISTS, THEN IT IS OPTIMAL
             //NO NEED TO COMPUTE THE OTHER
             cost = evaluate_cost(d_u, rho);
+            
+           //Serial.print("COST: ");
+            //Serial.println(cost);
             if (cost < cost_best){
                for(uint8_t counter=0; counter<3; counter++){
                d_best[counter] = d_u[counter];
@@ -200,11 +211,13 @@ void consensus_iterate(float rho) {
       }
       //check feasibility of minimum constrained to linear boundary
       sol = check_feasibility(d_bl);
-        /*Serial.print("FEASIBILITY: ");
-        Serial.println(sol);*/
+        ////Serial.print("FEASIBILITY: ");
+        //Serial.println(sol);
       // compute cost and if best store new optimum
       if (sol) {
           cost = evaluate_cost(d_bl, rho);
+        //Serial.print("COST: ");
+        //Serial.println(cost);
           if (cost < cost_best){
              for(uint8_t counter=0; counter<3; counter++){
               d_best[counter] = d_bl[counter];
@@ -228,11 +241,13 @@ void consensus_iterate(float rho) {
       d_b0[node.myHwId-1] = 0;
       //check feasibility of minimum constrained to 0 boundary
       sol = check_feasibility(d_b0);
-        /*Serial.print("FEASIBILITY: ");
-        Serial.println(sol);*/
+        //Serial.print("FEASIBILITY: ");
+        //Serial.println(sol);
       // compute cost and if best store new optimum
       if (sol){
           cost = evaluate_cost( d_b0, rho);
+        //Serial.print("COST: ");
+        //Serial.println(cost);
           if (cost < cost_best){
              for(uint8_t counter=0; counter<3; counter++){
               d_best[counter] = d_b0[counter];
@@ -256,11 +271,13 @@ void consensus_iterate(float rho) {
       d_b1[node.myHwId-1] = 100;
       //check feasibility of minimum constrained to 100 boundary
       sol = check_feasibility( d_b1);
-        /*Serial.print("FEASIBILITY: ");
-        Serial.println(sol);*/
+        //Serial.print("FEASIBILITY: ");
+        //Serial.println(sol);
       // compute cost and if best store new optimum
       if (sol){ 
           cost = evaluate_cost( d_b1, rho);
+        //Serial.print("COST: ");
+        //Serial.println(cost);
           if (cost < cost_best){
              for(uint8_t counter=0; counter<3; counter++){
               d_best[counter] = d_b1[counter];
@@ -280,16 +297,18 @@ void consensus_iterate(float rho) {
       for(uint8_t counter=0; counter<3; counter++){
         d_l0[counter]=(1/rho)*z[counter] - (1/m2)*node.k[counter]*(node.o-node.L[node.myHwId-1]) +
             (1/rho/m2)*node.k[counter]*(node.k[node.myHwId-1]*z[node.myHwId-1]-w);
-           // Serial.println(d_l0[counter]);
+           //Serial.println(d_l0[counter]);
       }
       d_l0[node.myHwId-1] = 0;
       //check feasibility of minimum constrained to linear and 0 boundary
       sol = check_feasibility(d_l0);
-       /* Serial.print("FEASIBILITY: ");
-        Serial.println(sol);*/
+        //Serial.print("FEASIBILITY: ");
+        //Serial.println(sol);
       // compute cost and if best store new optimum
       if (sol){ 
           cost = evaluate_cost(d_l0,rho);
+        //Serial.print("COST: ");
+        //Serial.println(cost);
           if (cost < cost_best){
              for(uint8_t counter=0; counter<3; counter++){
               d_best[counter] = d_l0[counter];
@@ -309,16 +328,18 @@ void consensus_iterate(float rho) {
       for(uint8_t counter=0; counter<3; counter++){
         d_l1[counter]=(1/rho)*z[counter] -(1/m2)*node.k[counter]*(node.o-node.L[node.myHwId-1]+
         100*node.k[node.myHwId-1]) + (1/rho/m2)*node.k[counter]*(node.k[node.myHwId-1]*z[node.myHwId-1]-w);
-       // Serial.println(d_l1[counter]);
+        //Serial.println(d_l1[counter]);
       }
       d_l1[node.myHwId-1] = 100;
       //check feasibility of minimum constrained to linear and 100 boundary
       sol = check_feasibility(d_l1);
-        /*Serial.print("FEASIBILITY: ");
-        Serial.println(sol);*/
+        //Serial.print("FEASIBILITY: ");
+        //Serial.println(sol);
       // compute cost and if best store new optimum
       if (sol){ 
           cost = evaluate_cost(d_l1, rho);
+        //Serial.print("COST: ");
+        //Serial.println(cost);
           if (cost < cost_best){
              for(uint8_t counter=0; counter<3; counter++){
               d_best[counter] = d_l1[counter];

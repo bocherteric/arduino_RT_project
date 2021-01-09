@@ -28,7 +28,7 @@ void setup() {
 
 void loop() {
 
-  
+
 
   while (millis() - timeVar >= periodVar) {
     timeVar = millis();
@@ -36,46 +36,47 @@ void loop() {
     if ( interrupt ) {
       canRead();
     }
-    if(wakeUp){
+
+
     canWakeUpInterface();
     canWakeUp();
-    }
-    
-      if (calibration) {
+
+
+    if (calibration) {
       calibration_function();
       calibration_interface();
-      }
-//check the occupancy and share with the others
-if (!calibration && !wakeUp){
-  if(ready_for_consensus){
-      distributed_solver();
-      consensus_interface();
-      if(solution_ready){
-        ready_for_consensus=0;
-        solution_ready=0;
-        percent=d[node.myHwId-1];
-        ti=timeVar; //initial time before the step
-        vi=read_voltage(); //initial voltage before the step
-        prevision.simulatorStart(percent*node.maxLux/100);
-        
-        Serial.println("Here is the final solution of the consensus function");
-        for(uint8_t counter=0; counter<=2; counter++){
-          Serial.println(d[counter]);
-        }
-        Serial.print("The cost is: ");
-          Serial.println(final_cost);
-      }
     }
-    luminaire();
-}  
+    //check the occupancy and share with the others
+    if (calibrationDone) {
+      if (ready_for_consensus) {
+        distributed_solver();
+        consensus_interface();
+        if (solution_ready) {
+          ready_for_consensus = 0;
+          solution_ready = 0;
+          percent = d[node.myHwId - 1];
+          ti = timeVar; //initial time before the step
+          vi = read_voltage(); //initial voltage before the step
+          prevision.simulatorStart(percent * node.maxLux / 100);
+
+          Serial.println("Here is the final solution of the consensus function");
+          for (uint8_t counter = 0; counter <= 2; counter++) {
+            Serial.println(d[counter]);
+          }
+          Serial.print("The cost is: ");
+          Serial.println(final_cost);
+        }
+      }
+      luminaire();
+    }
 
     //testing hub
-    if (calibration) {
+    if (calibrationDone) {
       hubServer();
       hubServerResponse();
       hubClient();
     }
-   
+
 
   }
 
@@ -162,12 +163,12 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
-         // Serial.println(instrF.data[i]);
+          // Serial.println(instrF.data[i]);
         }
       } else {
         Serial.println("Error in Can read()");
       }
-      
+
       switch (frame.data[1]) { //check which FSM needs to hear about this can message -> store in respective vector
         case 0://wake-up
         case 1:
@@ -193,11 +194,49 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
           break;
         case 15:
           if (!(hubBuffer.write(instr)))
-            Serial.println("floatHubBuffer overflow");
+            Serial.println("hubBuffer overflow");
+          break;
         case 16:
           if (!(floatHubBuffer.write(instrF)))
             Serial.println("floatHubBuffer overflow");
           break;
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        case 22:
+        case 23:
+          if (!(hubBuffer.write(instr)))
+            Serial.println("hubBuffer overflow");
+          break;
+        case 24:
+          if (!(floatHubBuffer.write(instrF)))
+            Serial.println("floatHubBuffer overflow");
+          break;
+        case 25:
+          if (!(hubBuffer.write(instr)))
+            Serial.println("hubBuffer overflow");
+          break;
+        case 26:
+        case 27:
+          if (!(floatHubBuffer.write(instrF)))
+            Serial.println("floatHubBuffer overflow");
+          break;
+        case 28:
+          if (!(hubBuffer.write(instr)))
+            Serial.println("hubBuffer overflow");
+          break;
+        case 29:
+          if (!(floatHubBuffer.write(instrF)))
+            Serial.println("floatHubBuffer overflow");
+          break;
+        case 30:
+          if (!(hubBuffer.write(instr)))
+            Serial.println("hubBuffer overflow");
+          break;
+
+
 
 
 
@@ -235,20 +274,20 @@ void irqHandler() {
   interrupt = true;
 }
 
-double mean_analogread(){ //does the average of the value mesured to avoid noise
-  
-  double sample1=analogRead(analogInPin);
-  double sample2=analogRead(analogInPin);
-  double sample3=analogRead(analogInPin);
-  double sample4=analogRead(analogInPin);
-  return (sample1+sample2+sample3+sample4)/4;
+double mean_analogread() { //does the average of the value mesured to avoid noise
+
+  double sample1 = analogRead(analogInPin);
+  double sample2 = analogRead(analogInPin);
+  double sample3 = analogRead(analogInPin);
+  double sample4 = analogRead(analogInPin);
+  return (sample1 + sample2 + sample3 + sample4) / 4;
 }
 
-double read_lux(){
-    double R2= 10*1023/mean_analogread()-10; //compute R2 in Kohm  
-    return pow(10,(log10(R2)-node.b)/node.m);
+double read_lux() {
+  double R2 = 10 * 1023 / mean_analogread() - 10; //compute R2 in Kohm
+  return pow(10, (log10(R2) - node.b) / node.m);
 }
 
-double read_voltage(){
-  return mean_analogread()*5.0/1023.0;
+double read_voltage() {
+  return mean_analogread() * 5.0 / 1023.0;
 }

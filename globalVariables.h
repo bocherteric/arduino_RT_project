@@ -17,14 +17,16 @@ const double analogInPin = A0;
 const int analogOutPin = 3;
 //FSM Switch Variables
 uint8_t cwuSwitch = 0; //Switch Variable for canWakeUp
+uint8_t conStartSwitch = 0;
 //Index
 uint8_t index=0;
 //Nodes management
 NodesContainer nodesCont;
-//Node node;
 //Luminaire
 uint8_t outputDC=0;
 bool occupancy=0;
+float luxOccupied =30;
+float luxUnoccupied = 10;
 
 
 //########## Juliette ##########
@@ -45,6 +47,7 @@ CanFsmBuffer miniHubBuffer;
 const int turnOnLightTime=300;
 unsigned long prevTime=0;
 bool calibration=false;
+bool calibrationDone = false;
 bool compute_gain=0;
 bool over=0;
 bool change_lux=1; 
@@ -80,11 +83,14 @@ String SR; //Server Response
 
 CanFsmBuffer hubBuffer;
 CanFloatBuffer floatHubBuffer;
+//CanFloatBuffer consensusStarBuffer;
 
 bool hubServerFlag = false;
 bool newMessage= false;
 float float_val = 0.0;
 bool bool_val = 0;
+
+
 
 //########## Eric ##########
 //FSM Data Buffers
@@ -108,6 +114,6 @@ bool restartWakeUp = false;
 bool checkedNodes = false;
 bool checkIfFirstNode = false;
 bool checkedNodesCounter = false;
-bool wakeUp=1;
+
 
 #endif

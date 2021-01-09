@@ -45,7 +45,7 @@ void distributed_solver(){
 
     }
     canWrite(node.myHwId,12);//tell everyone I'm ready to proceed
-    cs_solver= AVERAGE;
+    cs_solver= READY_EX;
    break;
 
    //WAIT UNTIL EVERYBODY IS READY

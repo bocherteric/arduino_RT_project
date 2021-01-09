@@ -2,6 +2,7 @@
 #define SIMULATOR_H
 #include "node.h"
 
+
 class Simulator {
 
   public:
@@ -12,7 +13,9 @@ class Simulator {
     float vf = 0;
 
 };
+
 Node node;
+
 void Simulator::simulatorStart(float lux_asked) {
   float R2s = pow(10, node.m * log10(lux_asked) + node.b); //
   tau = node.tau(lux_asked); //compute  simulation tau (us)

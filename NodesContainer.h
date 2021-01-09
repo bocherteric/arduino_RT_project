@@ -13,6 +13,7 @@ class NodesContainer {
 
     bool newNode(uint8_t node);
     bool addNode(uint8_t node);
+    bool nodeAvailable(uint8_t node);
     bool checkIfFirstNode(uint8_t myHwId);
     uint8_t setNextNode(uint8_t myHwId);
     void reset();
@@ -80,6 +81,14 @@ inline void NodesContainer::reset(){
       }
   index = 0;
   nextNode = 0;
+}
+
+inline bool NodesContainer::nodeAvailable(uint8_t node){
+  for (uint8_t i = 0; i < index; i++) {
+        if (nodesContainer[i] == node)
+          return true;
+      }
+      return false;
 }
 
 #endif

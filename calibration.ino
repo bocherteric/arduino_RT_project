@@ -27,7 +27,7 @@ void calibration_function(){
           nb_turn+=1;//To track the number of turns of calibration 
           if (nb_turn>1){// meaning, if it's the second time I do it ==> loop completed, the all calibration is done
             calibration=0;
-            ready_for_consensus=1;
+            calibrationDone=1;
             canWrite(node.myHwId,5);//Tell everybody the all calibration is done
             break;
           }
@@ -125,7 +125,7 @@ void calibration_interface(){
       break;
       case 5:
         calibration=0;
-        ready_for_consensus=1;
+        calibrationDone=1;
       break;
 
       case 6:

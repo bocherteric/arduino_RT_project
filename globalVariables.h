@@ -75,6 +75,7 @@ float cost = 1;
 float z[3]={};
 float w=0;
 bool ready_for_consensus=0;
+uint8_t exchangeCounter = 0;
 
 
 //########## Shaida ##########

@@ -43,9 +43,9 @@ void loop() {
 
 
     if (calibration) {
+      calibration_interface();
       calibration_function();
       calibration_interface();
-
     }
     //check the occupancy and share with the others
     if (calibrationDone) {
@@ -80,13 +80,9 @@ void loop() {
       consensusStart();
     }
 
-
   }
 
-
 }
-
-
 
 void canWrite(uint32_t id, uint8_t purpose, uint8_t recipient = 0, uint8_t data = 0, uint16_t floatData = 65535) {
   my_can_msg canMsg;
@@ -110,18 +106,18 @@ MCP2515::ERROR write(uint32_t id, uint32_t val, uint16_t floatData) {
     frame.can_dlc = 4;
     for ( int8_t i = 0; i < 4; i++ ) {
       frame.data[i] = msg.bytes[i];
-      Serial.println(msg.bytes[i]);
+      //Serial.println(msg.bytes[i]);
     }
   } else {
     frame.can_dlc = 6;
     for ( int i = 0; i < 4; i++ ) { //prepare can message
       frame.data[i] = msg.bytes[i];
-      Serial.println(msg.bytes[i]);
+      //Serial.println(msg.bytes[i]);
     }
     frame.data[4] = splitInt(floatData, LSB);
-    Serial.println(frame.data[4]);
+    //Serial.println(frame.data[4]);
     frame.data[5] = splitInt(floatData, MSB);
-    Serial.println(frame.data[5]);
+    //Serial.println(frame.data[5]);
   }
   return mcp2515.sendMessage(&frame);
 }
@@ -161,12 +157,12 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
       if (frame.can_dlc == 4) {
         for (int i = 0; i < 3; i++) { // Is there a better way, faster, and no copying values?
           instr.data[i] = frame.data[i];
-          Serial.println(instr.data[i]);
+          //Serial.println(instr.data[i]);
         }
       } else if (frame.can_dlc == 6) {
         for (int i = 0; i < 6; i++) { // Is there a better way, faster, and no copying values?
           instrF.data[i] = frame.data[i];
-          Serial.println(instrF.data[i]);
+          //Serial.println(instrF.data[i]);
         }
       } else {
         Serial.println("Error in Can read()");
@@ -193,7 +189,7 @@ void canRead() { //!!!!Check excecution time -> Read out one message at a time?!
         case 11:
         case 12:
           if (!(consensusBuffer.write(instr)))
-            Serial.println("floatconsensusBuffer overflow");
+            Serial.println("consensusBuffer overflow");
           break;
         case 15:
           if (!(hubBuffer.write(instr)))

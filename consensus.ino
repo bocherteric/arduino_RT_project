@@ -37,16 +37,18 @@ void distributed_solver(){
    ////
    // Nodes exchange their solutions
    case EXCHANGE:
-    for(uint8_t counter=0;counter<3;counter++){
-      if(d[counter]<=0)
-      canWrite(0,9+counter,0,0);//send 0 to everyone if negative
+      if(d[exchangeCounter]<=0)
+      canWrite(0,9+exchangeCounter,0,0);//send 0 to everyone if negative
       else
-      canWrite(0,9+counter,0,d[counter]);//send solutions to everyone
+      canWrite(0,9+exchangeCounter,0,d[exchangeCounter]);//send solutions to everyone
 
-    }
+    exchangeCounter ++;
 
+    if(exchangeCounter==2){
+      exchangeCounter =0;
     canWrite(0,12);//tell everyone I'm ready to proceed
     cs_solver= READY_EX;
+    }
    break;
 
    //WAIT UNTIL EVERYBODY IS READY
